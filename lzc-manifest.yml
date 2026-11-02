@@ -1,0 +1,53 @@
+application:
+  subdomain: grist
+  multi_instance: false
+  upstreams:
+    - location: /package-licenses/
+      backend: file:///lzcapp/pkg/content/licenses/
+    - location: /
+      backend: http://grist:8484/
+
+services:
+  grist:
+    # upstream: gristlabs/grist:1.7.22
+    image: docker.1ms.run/gristlabs/grist:1.7.22
+    environment:
+      - GRIST_HOST=0.0.0.0
+      # Behind the LazyCat https ingress the app is served same-origin, so it
+      # must not rewrite asset URLs to an absolute internal address.
+      - GRIST_SERVE_SAME_ORIGIN=true
+      - GRIST_ORG_IN_PATH=true
+      # Documents and the SQLite metadata DB both live here.
+      - GRIST_DATA_DIR=/persist/docs
+      - GRIST_INST_DIR=/persist
+      - GRIST_SESSION_COOKIE=grist_core
+      - GRIST_ALLOW_AUTOMATIC_VERSION_CHECKING=false
+      # Sandbox mode: pyodide runs formulas in-process, which works without
+      # gVisor/seccomp privileges on the host.
+      - GRIST_SANDBOX_FLAVOR=pyodide
+      - TZ=Asia/Shanghai
+    binds:
+      - /lzcapp/var/persist:/persist
+
+usage: |
+  Grist 是电子表格与数据库的结合体：像表格一样好用，又有数据库的关联和公式能力。
+
+  使用方法：
+  1. **首次打开会出现"Quick setup"引导页**，让你填管理员邮箱并选择登录方式。
+     建议先选「只用默认身份」或按向导建好管理员，这一步由你自己完成，包内无内置口令。
+  2. 建好账号后新建文档（Document），像表格一样加列、填数据。
+  3. 公式列支持 Excel 风格公式，也能切到 Python 写更复杂的处理逻辑。
+  4. 多张表之间可以建立引用关系，还能做图表和按条件筛选的视图。
+
+  数据与安全：
+  - 文档数据与元数据库都在 /lzcapp/var/persist，卸载应用会一并删除，请定期备份
+    （也可以在应用内导出为 .grist 文件留档）。
+  - 管理员由你在首启向导里创建，不存在内置弱口令。
+  - 应用经懒猫入口鉴权访问。
+
+  说明：
+  - 单容器部署，使用内置 SQLite，无需额外数据库。
+  - 公式沙箱使用 pyodide 模式（在进程内运行），因此不依赖宿主机的 gVisor/seccomp 权限。
+  - 已关闭自动版本检查，不向外部发起更新查询。
+  - 未配置邮件服务，邀请成员与找回密码等依赖邮件的功能不可用。
+  - 未做真机验证：初始化向导、建文档、公式计算以及重启后持久化均未在设备上实测。

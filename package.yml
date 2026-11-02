@@ -1,0 +1,18 @@
+package: community.lazycat.app.grist
+name: Grist
+version: 0.0.0
+description: "Spreadsheet-database hybrid: formulas, linked tables and charts, with Python formulas."
+min_os_version: "1.5.0"
+homepage: https://www.getgrist.com/
+author: Grist Labs
+license: Apache-2.0
+permissions:
+  required:
+    - net.internet
+locales:
+  zh:
+    name: Grist
+    description: "电子表格与数据库的结合：公式、关联表、图表，还能写 Python 公式做数据处理。"
+  en:
+    name: Grist
+    description: "Spreadsheet-database hybrid: formulas, linked tables and charts, with Python formulas."
